@@ -10,12 +10,13 @@ going to need a LOT of language extensions:
 module README where
 ~~~
 
-In addition, we're going to import some dependencies. We're going to
-make some use of the 'singletons' package (see
-<https://hackage.haskell.org/package/singletons>). The extensible
-effects module was taken from <http://okmij.org/ftp/Haskell/extensible/>.
-Lastly, for a very simple parser we're going to use 'parsec' (see
-<https://hackage.haskell.org/package/parsec>).
+In addition, we're going to use the following packages:
+
+  - singletons (see <https://hackage.haskell.org/package/singletons>);
+  - extensible effects (see <http://okmij.org/ftp/Haskell/extensible/>);
+  - parsec (see <https://hackage.haskell.org/package/parsec>).
+
+For the extensible effects library, the code is included in this repository.
 
 ~~~ {.haskell}
 import Control.Applicative ((<|>),empty)

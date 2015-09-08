@@ -47,16 +47,16 @@ singletons [d|
 infixr 5 :\
 infixl 5 :/
 infixr 5 :->
+~~~
 
+
+~~~ {.haskell}
 type IV = NP :\ S  -- intransitive verbs
 type TV = IV :/ NP -- transitive verbs
 type AP = NP :/ NP -- appositive modifier
 
-sIV :: SSynT IV
 sIV = SNP :%\ SS
-sTV :: SSynT TV
 sTV = sIV :%/ SNP
-sAP :: SSynT (NP :/ NP)
 sAP = SNP :%/ SNP
 ~~~
 
@@ -70,14 +70,17 @@ type family Tr (ty :: SynT) :: SemT where
   Tr (b :/ a) = Tr a :-> Tr b
 ~~~
 
+
 ~~~ {.haskell}
 data Typed (expr :: SemT -> *) = forall a. Typed (SSynT a, expr (Tr a))
 ~~~
+
 
 ~~~ {.haskell}
 data Tree a = Leaf a | Node (Tree a) (Tree a)
             deriving (Show, Functor, Foldable, Traversable)
 ~~~
+
 
 ~~~ {.haskell}
 data Lexicon (expr :: SemT -> *) = Lexicon
@@ -85,6 +88,7 @@ data Lexicon (expr :: SemT -> *) = Lexicon
   , apply  :: forall a b. expr (a :-> b) -> expr a -> expr b
   }
 ~~~
+
 
 ~~~ {.haskell}
 maybeApply :: Lexicon expr -> Typed expr -> Typed expr -> Maybe (Typed expr)
@@ -104,32 +108,31 @@ maybeApply Lexicon{..} ty1 ty2 =
     _ -> empty
 ~~~
 
+
 ~~~ {.haskell}
 parseAs :: Lexicon expr -> String -> SSynT a -> [expr (Tr a)]
 parseAs lex str a1 =
   case parse sent "" str of
     Left  _ -> empty
     Right t -> exec =<< (comp =<< traverse (lookup lex) t)
+    where
+      -- unpack expression only if it has the right type
+      exec (Typed (a2,x)) =
+        case a1 %~ a2 of
+          Proved Refl -> pure x
+          _           -> empty
 
-  where
+      -- fold tree using function application
+      comp (Leaf e)     = pure e
+      comp (Node t1 t2) =
+        do e1 <- comp t1; e2 <- comp t2; maybeToList (maybeApply lex e1 e2)
 
-    -- unpack `Typed' if its type is correct
-    exec (Typed (a2,x)) =
-      case a1 %~ a2 of
-        Proved Refl -> pure x
-        _           -> empty
-
-    -- compose the function at the node using `maybeApply'
-    comp (Leaf e)     = pure e
-    comp (Node t1 t2) =
-      do e1 <- comp t1; e2 <- comp t2; maybeToList (maybeApply lex e1 e2)
-
-    -- simple Parsec grammar for trees such as "(the unicorn) found jack first"
-    sent = chainr1 atom node
-      where
-        word = Leaf <$> many1 letter
-        atom = word <|> (char '(' *> (sent <* char ')'))
-        node = pure Node <* spaces
+      -- simple grammar for phrases as "(the unicorn) found jack first"
+      sent = chainr1 atom node
+        where
+          word = Leaf <$> many1 letter
+          atom = word <|> (char '(' *> (sent <* char ')'))
+          node = pure Node <* spaces
 ~~~
 
 ~~~ {.haskell}

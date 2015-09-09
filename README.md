@@ -339,7 +339,7 @@ instance SemE (Ext r) where
 
 But now we're all ready to go! First, let's determine the effects we
 want to use in our library. We could still leave this underspecified,
-and simple give membership constraints... but that would be much more
+and only give membership constraints... but that would be much more
 verbose.
 
 ~~~ {.haskell}

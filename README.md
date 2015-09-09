@@ -290,11 +290,18 @@ respect to Haskell's type system, we can choose Haskell to be our
 semantic language. That means that we now have the ability to parse
 strings to valid Haskell functions.
 
+First, let's set up a small language to represent our semantic
+expressions:
+
 ~~~ {.haskell}
-data Entity = Tim | Bob
+data Entity = Tim -- ^ Tim is a carpenter and an introvert, likes
+                  --   holding hands and long walks on the beach.
+            | Bob -- ^ Bob is an aspiring actor, and a social media
+                  --   junkie. Likes travelling, beer, and Tim.
             deriving (Show)
 
-data Pred = Like Entity Entity | Stupid Entity
+data Pred = Like Entity Entity -- ^ Is it 'like' or 'like like'?
+          | Stupid Entity      -- ^ This is definitely not 'like like'.
           deriving (Show)
 ~~~
 

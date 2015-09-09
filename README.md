@@ -212,17 +212,7 @@ data Tree a = Leaf a | Node (Tree a) (Tree a)
 
 However, we don't actually want to write these horribly verbose
 things, implement a tiny parser which parses sentences of the form
-"(the unicorn) (found jack) first". Spaces form nodes in the tree, and
-are taken to be right associative, so the example above represents the
-following tree:
-
-            -----------
-           /           \
-          /           ----
-         /           /    \
-       ----        ----    \
-      /    \      /    \    \
-    the unicorn found jack first
+"(the unicorn) (found jack) first":
 
 ~~~ {.haskell}
 parseTree :: String -> Maybe (Tree String)
@@ -236,6 +226,18 @@ parseTree str = case parse sent "" str of
         atom = word <|> (char '(' *> (sent <* char ')'))
         node = pure Node <* spaces
 ~~~
+
+Spaces form nodes in the tree, and
+are taken to be right associative, so the example above represents the
+following tree:
+
+            -----------
+           /           \
+          /           ----
+         /           /    \
+       ----        ----    \
+      /    \      /    \    \
+    the unicorn found jack first
 
 Last, before we can write out full implementation of parsing with AB
 grammars, we're going to need the concept of a lexicon. In our case, a

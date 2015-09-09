@@ -319,8 +319,8 @@ most importantly, let's keep the set of effects `r` unspecified!
 
 ~~~ {.haskell}
 type family ToEff r t :: * where
-  ToEff r E        = Eff r Entity
-  ToEff r T        = Eff r Pred
+  ToEff r E         = Eff r Entity
+  ToEff r T         = Eff r Pred
   ToEff r (a :-> b) = ToEff r a -> ToEff r b
 ~~~
 

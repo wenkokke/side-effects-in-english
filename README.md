@@ -346,7 +346,7 @@ verbose.
 type RW = (Reader Entity ': Writer Pred ': '[])
 ~~~
 
-Hooray! We have a lexicon! And it's reasonably simple, too!
+Hooray! We can have a lexicon now! And it's reasonably simple, too!
 
 ~~~ {.haskell}
 lex :: String -> [Typed (Ext RW)]

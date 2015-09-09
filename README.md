@@ -171,11 +171,6 @@ class Expr (expr :: SemT -> *) where
 
 
 ~~~ {.haskell}
-type Lexicon expr = String -> [Typed expr]
-~~~
-
-
-~~~ {.haskell}
 maybeApply :: Expr expr => Typed expr -> Typed expr -> Maybe (Typed expr)
 maybeApply (Typed (a1,x)) (Typed (a2 :%\ b,f)) =
       case a1 %~ a2 of
@@ -186,6 +181,11 @@ maybeApply (Typed (b :%/ a1,f)) (Typed (a2,x)) =
         Proved Refl -> pure (Typed (b, apply f x))
         _           -> empty
 maybeApply _ _ = empty
+~~~
+
+
+~~~ {.haskell}
+type Lexicon expr = String -> [Typed expr]
 ~~~
 
 

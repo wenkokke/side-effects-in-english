@@ -290,8 +290,8 @@ respect to Haskell's type system, we can choose Haskell to be our
 semantic language. That means that we now have the ability to parse
 strings to valid Haskell functions.
 
-First, let's set up a small language to represent our semantic
-expressions:
+First, let's set up a small language to represent our world, which in
+this case is mostly made up of Bob and Tim:
 
 ~~~ {.haskell}
 data Entity = Tim -- ^ Tim is a carpenter and an introvert, likes
@@ -305,6 +305,18 @@ data Pred = Like Entity Entity -- ^ Is it 'like' or 'like like'?
           deriving (Show)
 ~~~
 
+Secondly, we could turn our expressions into plain Haskell
+expressions, but that would be dull. Language isn't side-effect
+free---there's all kinds of stuff going on! So, we're going to use
+a library for extensible effects written by Oleg Kiselyov, Amr Sabry,
+Cameron Swords, and Hiromi Ishii. For more information, see
+<http://okmij.org/ftp/Haskell/extensible/>---however, if you just want
+to compile and run this code, I've included the necessary files in the
+repository.
+
+Let's translate our semantic types into effectful Haskell types! And,
+most importantly, let's keep the set of effects `r` unspecified!
+
 ~~~ {.haskell}
 type family ToEff r t :: * where
   ToEff r E        = Eff r Entity
@@ -312,36 +324,78 @@ type family ToEff r t :: * where
   ToEff r (a :-> b) = ToEff r a -> ToEff r b
 ~~~
 
+Now, because Haskell is being a buzzkill about using un-saturated type
+families, we have to wrap our translation in a newtype to be able to
+use it with the `Typed` definition and the `SemE` type class. And
+because of this, we also have to convince Haskell that these wrapped
+Haskell functions can be applied:
+
 ~~~ {.haskell}
 newtype Ext r a = Ext (ToEff r a)
+
+instance SemE (Ext r) where
+  apply (Ext f) (Ext x) = Ext (f x)
 ~~~
+
+But now we're all ready to go! First, let's determine the effects we
+want to use in our library. We could still leave this underspecified,
+and simple give membership constraints... but that would be much more
+verbose.
 
 ~~~ {.haskell}
 type RW = (Reader Entity ': Writer Pred ': '[])
 ~~~
 
-~~~ {.haskell}
-lex :: String -> [Typed (Ext RW)]
-lex "tim"    = pure (Typed (SNP , Ext (pure Tim)))
-lex "bob"    = pure (Typed (SNP , Ext (pure Bob)))
-lex "likes"  = pure (Typed (sTV , Ext (liftA2 (flip Like))))
-lex "stupid" = pure (Typed (sAP , Ext (>>= \x -> tell (Stupid x) *> pure x)))
-lex "him"    = pure (Typed (SNP , Ext ask))
-~~~
+Hooray! We have a lexicon! And it's reasonably simple, too!
 
 ~~~ {.haskell}
-instance SemE (Ext r) where
-    apply (Ext f) (Ext x) = Ext (f x)
+lex :: String -> [Typed (Ext RW)]
+lex "tim"    = [ Typed (SNP , Ext (pure Tim))                            ]
+lex "bob"    = [ Typed (SNP , Ext (pure Bob))                            ]
+lex "likes"  = [ Typed (sTV , Ext (liftA2 (flip Like)))                  ]
+lex "stupid" = [ Typed (sAP , Ext (>>= \x -> tell (Stupid x) *> pure x)) ]
+lex "him"    = [ Typed (SNP , Ext ask)                                   ]
 ~~~
+
+The first two definitions simply return Tim and Bob as effect-free
+constants---hence the application of `pure`. Tim and Bob are both of
+type `Entity`, and through our translation, `NP` gets translated to
+`Eff r Entity`, so this works out.
+
+Then, the predicate `Like` is simply lifted by `liftA2`, which is
+similar to `pure`, but for binary functions. The `flip` is present
+because according to the grammar, `Like` will take it's object first
+and the subject second... but for readability, we'd like that to be
+the other way around.
+
+The definition for "stupid" acts as an identity function on entities,
+but inserts a predicate into the 'appositive dimension'. This
+corresponds to the linguistic analysis of expressives: they don't
+contribute to the sentence meaning, but store their meanings in some
+other meaning dimension---in this case, a `Writer` monad!
+
+And last, the definition for "him" simply asks a `Reader` monad what
+it's interpretation should be! A more complex example of anaphora
+resolution would be to also include a `Writer` monad, and have
+entities submit themselves as potential referents, then have this
+`Writer` monad periodically empty itself into the `Reader` monad,
+e.g. at sentence or clause boundaries, and have anaphora consume the
+first appropriate referent. But we digress!
+
+We're still stuck with these unresolved effects, which arise from our
+lexicon. So we're going to define a function `runExt`, which handles
+all effects in order, and then escapes the `Eff` monad:
 
 ~~~ {.haskell}
 runExt :: Entity -> Ext RW T -> (Pred, [Pred])
 runExt x (Ext e) = run (runWriter (runReader e x))
 ~~~
 
+And with all this in place, we can handle an example sentence:
+
 ~~~ {.haskell}
 s1 :: [(Pred, [Pred])]
 s1 = runExt Tim <$> parseWith lex "(stupid bob) likes him" SS
 ~~~
 
-`[(Like Bob Tim,[Stupid Bob])]`
+Which evaluates to: `[(Like Bob Tim,[Stupid Bob])]`

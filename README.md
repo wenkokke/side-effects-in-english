@@ -61,9 +61,9 @@ include both the universal and the existential quantifier.
 The translation function then maps the types for `L₁` to types for
 `L₂`, and the words in `L₁` to constants in `L₂`:
 
-    Tr S       = T
-    Tr N       = E → T
-    Tr NP      = E
+    Tr S       = t
+    Tr N       = e → t
+    Tr NP      = e
     Tr (A \ B) = Tr A → Tr B
     Tr (B / A) = Tr A → Tr B
 
@@ -164,40 +164,37 @@ data Tree a = Leaf a | Node (Tree a) (Tree a)
             deriving (Show, Functor, Foldable, Traversable)
 ~~~
 
-
 ~~~ {.haskell}
-data Lexicon (expr :: SemT -> *) = Lexicon
-  { lookup :: String -> [Typed expr]
-  , apply  :: forall a b. expr (a :-> b) -> expr a -> expr b
-  }
+class Expr (expr :: SemT -> *) where
+    apply :: forall a b. expr (a :-> b) -> expr a -> expr b
 ~~~
 
 
 ~~~ {.haskell}
-maybeApply :: Lexicon expr -> Typed expr -> Typed expr -> Maybe (Typed expr)
-maybeApply Lexicon{..} ty1 ty2 =
-  case (ty1, ty2) of
-
-    (Typed (a1,x), Typed (a2 :%\ b,f)) ->
-      case a1 %~ a2 of
-        Proved Refl -> pure (Typed (b, apply f x))
-        _           -> empty
-
-    (Typed (b :%/ a1,f), Typed (a2,x)) ->
-      case a1 %~ a2 of
-        Proved Refl -> pure (Typed (b, apply f x))
-        _           -> empty
-
-    _ -> empty
+type Lexicon expr = String -> [Typed expr]
 ~~~
 
 
 ~~~ {.haskell}
-parseAs :: Lexicon expr -> String -> SSynT a -> [expr (Tr a)]
+maybeApply :: Expr expr => Typed expr -> Typed expr -> Maybe (Typed expr)
+maybeApply (Typed (a1,x)) (Typed (a2 :%\ b,f)) =
+      case a1 %~ a2 of
+        Proved Refl -> pure (Typed (b, apply f x))
+        _           -> empty
+maybeApply (Typed (b :%/ a1,f)) (Typed (a2,x)) =
+      case a1 %~ a2 of
+        Proved Refl -> pure (Typed (b, apply f x))
+        _           -> empty
+maybeApply _ _ = empty
+~~~
+
+
+~~~ {.haskell}
+parseAs :: Expr expr => Lexicon expr -> String -> SSynT a -> [expr (Tr a)]
 parseAs lex str a1 =
   case parse sent "" str of
     Left  _ -> empty
-    Right t -> exec =<< (comp =<< traverse (lookup lex) t)
+    Right t -> exec =<< (comp =<< traverse lex t)
     where
       -- unpack expression only if it has the right type
       exec (Typed (a2,x)) =
@@ -208,7 +205,7 @@ parseAs lex str a1 =
       -- fold tree using function application
       comp (Leaf e)     = pure e
       comp (Node t1 t2) =
-        do e1 <- comp t1; e2 <- comp t2; maybeToList (maybeApply lex e1 e2)
+        do e1 <- comp t1; e2 <- comp t2; maybeToList (maybeApply e1 e2)
 
       -- simple grammar for phrases as "(the unicorn) found jack first"
       sent = chainr1 atom node
@@ -251,13 +248,8 @@ lex "him"    = pure (Typed (SNP , Ext ask))
 ~~~
 
 ~~~ {.haskell}
-app :: (ToEff r t ~ (ToEff r a -> ToEff r b)) => Ext r t -> Ext r a -> Ext r b
-app (Ext f) (Ext x) = Ext (f x)
-~~~
-
-~~~ {.haskell}
-ext :: Lexicon (Ext RW)
-ext = Lexicon { lookup = lex, apply = app }
+instance Expr (Ext r) where
+    apply (Ext f) (Ext x) = Ext (f x)
 ~~~
 
 ~~~ {.haskell}
@@ -267,7 +259,7 @@ runExt (Ext e) x = run (runWriter (runReader e x))
 
 ~~~ {.haskell}
 s1 :: [(Pred, [Pred])]
-s1 = runExt <$> parseAs ext "(stupid bob) likes him" SS <*> pure Tim
+s1 = runExt <$> parseAs lex "(stupid bob) likes him" SS <*> pure Tim
 ~~~
 
 `[(Like Bob Tim,[Stupid Bob])]`

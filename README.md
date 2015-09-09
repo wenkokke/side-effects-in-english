@@ -145,6 +145,7 @@ to use to represent our semantic terms, for instance:
       John :: Expr E
       Mary :: Expr E
       Like :: Expr (E :-> E :-> T)
+      (:$) :: Expr (a :-> b) -> Expr a -> Expr b
 
 While we have a way of talking about terms of a certain type---e.g. by
 saying `Expr E` we can talk about all entities---we cannot really

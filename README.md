@@ -310,7 +310,7 @@ expressions, but that would be dull. Language isn't side-effect
 free---there's all kinds of stuff going on! So, we're going to use
 a library for extensible effects written by Oleg Kiselyov, Amr Sabry,
 Cameron Swords, and Hiromi Ishii. For more information, see
-<http://okmij.org/ftp/Haskell/extensible/>---however, if you just want
+<http://okmij.org/ftp/Haskell/extensible/>. However, if you just want
 to compile and run this code, I've included the necessary files in the
 repository.
 

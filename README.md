@@ -1,3 +1,5 @@
+## AB grammars in Haskell
+
 Let's have a little fun with basic AB grammars in Haskell, see how
 far we can get. First off, don't let this scare you off... we are
 going to need a LOT of language extensions:
@@ -28,9 +30,6 @@ import Data.Singletons.TH (singletons)
 import Eff1 (Eff,run,Reader,runReader,ask,Writer,tell,runWriter)
 import Text.Parsec (char,letter,spaces,many1,chainr1,parse)
 ~~~
-
-
-## AB grammars in Haskell
 
 Before we start off, let's review some basic AB-grammar knowledge. In
 general, a categorial grammar---of which AB-grammars are an

@@ -16,7 +16,8 @@ In addition, we're going to use the following packages:
 
   - singletons (see <https://hackage.haskell.org/package/singletons>);
   - extensible effects (see <http://okmij.org/ftp/Haskell/extensible/>);
-  - parsec (see <https://hackage.haskell.org/package/parsec>).
+  - parsec (see <https://hackage.haskell.org/package/parsec>);
+  - markdown-unlit (see <https://hackage.haskell.org/package/markdown-unlit>).
 
 For the extensible effects library, the code is included in this repository.
 

@@ -19,7 +19,7 @@ In addition, we're going to use the following packages:
   - parsec (see <https://hackage.haskell.org/package/parsec>);
   - markdown-unlit (see <https://hackage.haskell.org/package/markdown-unlit>).
 
-For the extensible effects library, the code is included in this repository.
+For the extensible effects library, a copy of all the required code is included in this repository.
 
 ~~~ {.haskell}
 import Prelude hiding (lookup,lex)

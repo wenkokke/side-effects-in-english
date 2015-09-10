@@ -210,8 +210,8 @@ data Tree a = Leaf a | Node (Tree a) (Tree a)
             deriving (Show, Functor, Foldable, Traversable)
 ~~~
 
-However, we don't actually want to write these horribly verbose
-things, implement a tiny parser which parses sentences of the form
+However, since we don't actually want to write these horribly verbose
+things, we implement a tiny parser which parses sentences of the form
 "(the unicorn) (found jack) first":
 
 ~~~ {.haskell}

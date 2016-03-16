@@ -1,1 +1,4 @@
-:set -pgmL markdown-unlit
+:set -pgmL unlit
+:set -optL --ghc
+:set -optL --language=haskell
+:set -optL --from=jekyll

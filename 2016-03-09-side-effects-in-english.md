@@ -184,12 +184,15 @@ structure on the value level and on the type level. For the type
 `SynT` above, that means that the `singletons` function generates a
 second data type:
 
-    data SSynT (ty :: SynT) where
-      SS    :: SSynT S
-      SN    :: SSynT N
-      SNP   :: SSynT NP
-      (:%\) :: SSynT a -> SSynT b -> SSynT (a :\ b)
-      (:%/) :: SSynT b -> SSynT a -> SSynT (b :/ a)
+~~~
+data SSynT (ty :: SynT) where
+  SS    :: SSynT S
+  SN    :: SSynT N
+  SNP   :: SSynT NP
+  (:%\) :: SSynT a -> SSynT b -> SSynT (a :\ b)
+  (:%/) :: SSynT b -> SSynT a -> SSynT (b :/ a)
+~~~
+{:.language-haskell}
 
 By using the singleton of some value, we can get that value *on the
 type level*---and by pattern matching on a singleton, we can pattern
@@ -236,11 +239,14 @@ type family Tr (ty :: SynT) :: SemT where
 Let's assume for now that we have some sort of data type that we wish
 to use to represent our semantic terms, for instance:
 
-    data Expr (ty :: SemT) where
-      John :: Expr E
-      Mary :: Expr E
-      Like :: Expr (E :-> E :-> T)
-      (:$) :: Expr (a :-> b) -> Expr a -> Expr b
+~~~
+data Expr (ty :: SemT) where
+  John :: Expr E
+  Mary :: Expr E
+  Like :: Expr (E :-> E :-> T)
+  (:$) :: Expr (a :-> b) -> Expr a -> Expr b
+~~~
+{:.language-haskell}
 
 While we have a way of talking about terms of a certain type---e.g. by
 saying `Expr E` we can talk about all entities---we cannot really
@@ -496,8 +502,8 @@ runExt x (Ext e) = run (runWriter (runReader e x))
 And with all this in place, we can handle an example sentence:
 
 {% highlight haskell %}
-s1 :: [(Pred, [Pred])]
-s1 = runExt Tim <$> parseWith lex "(stupid bob) likes him" SS
+example :: [(Pred, [Pred])]
+example = runExt Tim <$> parseWith lex "(stupid bob) likes him" SS
 {% endhighlight %}
 
 Which evaluates to: `[(Like Bob Tim,[Stupid Bob])]`

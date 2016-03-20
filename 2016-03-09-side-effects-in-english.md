@@ -115,50 +115,64 @@ Before we start off, let's review some basic AB-grammar knowledge. In
 general, a categorial grammar---of which AB-grammars are an
 instance---consist of three things:
 
-  1. a typed language \\(\\mathcal{L}_1\\);
-  2. a typed language \\(\\mathcal{L}_2\\); and
-  3. a translation \\(Tr\\) from \\(\\mathcal{L}_1\\) to \\(\\mathcal{L}_2\\).
+  1. a typed language $$\mathcal{L}_1$$;
+  2. a typed language $$\mathcal{L}_2$$; and
+  3. a translation $$Tr$$ from $$\mathcal{L}_1$$ to $$\mathcal{L}_2$$.
 
-The language \\(\\mathcal{L}_1\\) describes the *grammar* of our
-language, whereas \\(\\mathcal{L}_2\\) will describe its
+The language $$\mathcal{L}_1$$ describes the *grammar* of our
+language, whereas $$\mathcal{L}_2$$ will describe its
 *meaning*. And one more important requirement: if we have a type in
-\\(\\mathcal{L}_1\\), then we should have some efficient way of
+$$\mathcal{L}_1$$, then we should have some efficient way of
 getting all the programs of that type---this will be our parsing
 algorithm.
 
-In the case of AB-grammars, \\(\\mathcal{L}_1\\) has the following types:
-\\[
-    \\text{Type }A, B ::= S \\mid N \\mid NP \\mid A \\backslash B \\mid B / A
-\\]
+In the case of AB-grammars, $$\mathcal{L}_1$$ has the following types:
+
+$$
+    \text{Type }A, B ::= S \mid N \mid NP \mid A \backslash B \mid B / A
+$$
+
 The programs in this language consist of a bunch of constants, which
 represent words. It also has two rules for building programs, of
 them variants of function application:
-\\[
-    \\frac{x:A \\quad f:A \\backslash B}{(fx):B}{\\small \\backslash e}
-    \\quad
-    \\frac{f:B / A \\quad x:A}{(fx):B}{\\small / e}
-\\]
-The language \\(\\mathcal{L}_2\\) is the simply-typed lambda calculus,
-typed with only the primitive types \\(e\\) and \\(t\\), for entities
+
+$$
+    \frac{x:A \quad f:A \backslash B}{(fx):B}{\small \backslash e}
+    \quad
+    \frac{f:B / A \quad x:A}{(fx):B}{\small / e}
+$$
+
+The language $$\mathcal{L}_2$$ is the simply-typed lambda calculus,
+typed with only the primitive types $$e$$ and $$t$$, for entities
 and truth-values:
-\\[
-    \\text{Types }\\sigma, \\tau ::= e \\mid t \\mid \\sigma \\to \\tau
-\\]
+
+$$
+    \text{Types }\sigma, \tau ::= e \mid t \mid \sigma \to \tau
+$$
+
 It also has a set of typed constants, which we use to represent the
 abstract meanings of words. This means it contains familiar logical
-operators, like \\({\\wedge}:t\\to t\\to t\\) or \\(\\forall:(e\\to
-t)\\to t\\), but also things like \\(cat:e\\to t\\), the predicate
+operators, like $${\wedge}:t\to t\to t$$ or $$\forall:(e\to
+t)\to t$$, but also things like $$cat:e\to t$$, the predicate
 which tests whether or not something is a cat.
 
-The translation function then maps the types for \\(\\mathcal{L}_1\\)
-to types for \\(\\mathcal{L}_2\\), and the words in
-\\(\\mathcal{L}_1\\) to expressions in \\(\\mathcal{L}_2\\). For the
+The translation function then maps the types for $$\mathcal{L}_1$$
+to types for $$\mathcal{L}_2$$, and the words in
+$$\mathcal{L}_1$$ to expressions in $$\mathcal{L}_2$$. For the
 types, the translation is as follows:
 
-\\[ \\begin{array}{lcl} Tr(S) &= &t\\\\ Tr(N) &= &e\\to t\\\\ Tr(NP) &= &e\\\\ Tr(A \\backslash B) &= &Tr(A)\\to Tr(B)\\\\ Tr(B / A) &= &Tr(A)\\to Tr(B) \\end{array} \\]
+$$
+  \begin{array}{lcl}
+    Tr(S) &= &t\\
+    Tr(N) &= &e\to t\\
+    Tr(NP) &= &e\\
+    Tr(A \backslash B) &= &Tr(A)\to Tr(B)\\
+    Tr(B / A) &= &Tr(A)\to Tr(B)
+  \end{array}
+$$
 
 The translation on the level of programs is simple: programs in
-\\(\\mathcal{L}_1\\) consist *solely* of function applications and
+$$\mathcal{L}_1$$ consist *solely* of function applications and
 some constants. As long as we don't make promises in the types of
 those constants that we cannot keep, we should be fine!
 
@@ -223,7 +237,7 @@ sAP = SNP :%/ SNP
 {% endhighlight %}
 
 So now that we've defined the types of the languages
-\\(\\mathcal{L}_1\\) and \\(\\mathcal{L}_2\\), we can define our
+$$\mathcal{L}_1$$ and $$\mathcal{L}_2$$, we can define our
 translation *on types*. Note that our previous definition of our
 translation function was already more-or-less valid Haskell:
 

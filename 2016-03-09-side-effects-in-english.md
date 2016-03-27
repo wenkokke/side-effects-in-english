@@ -82,16 +82,16 @@ do this in Haskell, and we're going to need a LOT of language
 extensions. This is because we're basically going to parse strings to
 Haskell functions:
 
-{% highlight haskell %}
+``` haskell
 {-# LANGUAGE TemplateHaskell, QuasiQuotes, FlexibleInstances, FlexibleContexts,
              TypeFamilies, GADTs, TypeOperators, DataKinds, PolyKinds, RankNTypes,
              KindSignatures, UndecidableInstances, StandaloneDeriving,
              RecordWildCards, DeriveFunctor, DeriveFoldable, DeriveTraversable
              #-}
-{% endhighlight %}
+```
 
 <div style="display:none;">
-{% highlight haskell %}
+``` haskell
 import Prelude hiding (lookup,lex)
 import Control.Applicative ((<|>),empty,liftA2)
 import Data.Maybe (maybeToList)
@@ -100,7 +100,7 @@ import Data.Singletons.Prelude
 import Data.Singletons.TH (singletons)
 import Eff1 (Eff,run,Reader,runReader,ask,Writer,tell,runWriter)
 import Text.Parsec (char,letter,spaces,many1,chainr1,parse)
-{% endhighlight %}
+```
 </div>
 
 In addition, we're going to use the following packages:
@@ -179,7 +179,7 @@ those constants that we cannot keep, we should be fine!
 So, let's start off by creating some Haskell data types to represent
 the syntactic and semantic types described above:
 
-{% highlight haskell %}
+``` haskell
 singletons [d|
 
     data SynT = S | N | NP | SynT :\ SynT | SynT :/ SynT
@@ -189,7 +189,7 @@ singletons [d|
               deriving (Show,Eq)
 
   |]
-{% endhighlight %}
+```
 
 The `singletons` function that we're using here is important. It's a
 template Haskell function which, given some datatype, defines its
@@ -216,17 +216,17 @@ generated. They will become relevant soon enough.
 First off, though---we probably should've done this right away---let's
 just set some fixities for our type-level operators:
 
-{% highlight haskell %}
+``` haskell
 infixr 5 :\
 infixl 5 :/
 infixr 5 :->
-{% endhighlight %}
+```
 
 And while we're at it, let's create some type-level aliases for common
 parts of speech---though I cannot say that this treatment of appositive
 modifiers is entirely common:[^convention]
 
-{% highlight haskell %}
+``` haskell
 type IV = NP :\ S  -- intransitive verbs
 type TV = IV :/ NP -- transitive verbs
 type AP = NP :/ NP -- appositive modifier
@@ -234,21 +234,21 @@ type AP = NP :/ NP -- appositive modifier
 sIV = SNP :%\ SS
 sTV = sIV :%/ SNP
 sAP = SNP :%/ SNP
-{% endhighlight %}
+```
 
 So now that we've defined the types of the languages
 $$\mathcal{L}_1$$ and $$\mathcal{L}_2$$, we can define our
 translation *on types*. Note that our previous definition of our
 translation function was already more-or-less valid Haskell:
 
-{% highlight haskell %}
+``` haskell
 type family Tr (ty :: SynT) :: SemT where
   Tr S        = T
   Tr N        = E :-> T
   Tr NP       = E
   Tr (a :\ b) = Tr a :-> Tr b
   Tr (b :/ a) = Tr a :-> Tr b
-{% endhighlight %}
+```
 
 Let's assume for now that we have some sort of data type that we wish
 to use to represent our semantic terms, for instance:
@@ -267,9 +267,9 @@ saying `Expr E` we can talk about all entities---we cannot really
 leave the type open and talk about *all* well-typed terms, regardless
 of type. For this we need to introduce a new data type:
 
-{% highlight haskell %}
+``` haskell
 data Typed (expr :: SemT -> *) = forall a. Typed (SSynT a, expr (Tr a))
-{% endhighlight %}
+```
 
 The `Typed` data-type contains a tuple of a singleton for a semantic
 type, and an expression. Notice that the type-level variable `a` is
@@ -289,10 +289,10 @@ grammars are built around. Therefore, we're going to make a tiny type
 class which encodes function application of functions using the
 semantic types:
 
-{% highlight haskell %}
+``` haskell
 class SemE (expr :: SemT -> *) where
     apply :: forall a b. expr (a :-> b) -> expr a -> expr b
-{% endhighlight %}
+```
 
 Using this `apply` function, we can define application on `Typed`
 expression as well.[^proofsearch] Since these expressions hide their
@@ -308,7 +308,7 @@ following:
 
 In all other cases, we're forced to return `Nothing`:
 
-{% highlight haskell %}
+``` haskell
 maybeApply :: SemE expr => Typed expr -> Typed expr -> Maybe (Typed expr)
 maybeApply (Typed (a1,x)) (Typed (a2 :%\ b,f)) =
   case a1 %~ a2 of
@@ -319,7 +319,7 @@ maybeApply (Typed (b :%/ a1,f)) (Typed (a2,x)) =
     Proved Refl -> pure (Typed (b, apply f x))
     _           -> empty
 maybeApply _ _ = empty
-{% endhighlight %}
+```
 
 What we've implemented above is just a *check* to see if some given
 pair of expressions can be applied as function and argument. Applied
@@ -327,17 +327,17 @@ repeatedly, this corresponds to checking if some given syntax tree has
 a well-typed function-argument structure. If we want to do this, we're
 going to need some sort of trees:
 
-{% highlight haskell %}
+``` haskell
 data Tree a = Leaf a | Node (Tree a) (Tree a)
             deriving (Show, Functor, Foldable, Traversable)
-{% endhighlight %}
+```
 
 However, since we don't actually want to write these horribly verbose
 things, we're going to use parser combinators to implement a tiny
 parser which parses sentences of the form "(the unicorn) (found jack)
 first":
 
-{% highlight haskell %}
+``` haskell
 parseTree :: String -> Maybe (Tree String)
 parseTree str = case parse sent "" str of
   Left  _ -> empty
@@ -348,7 +348,7 @@ parseTree str = case parse sent "" str of
         word = Leaf <$> many1 letter
         atom = word <|> (char '(' *> (sent <* char ')'))
         node = pure Node <* spaces
-{% endhighlight %}
+```
 
 That is to say, for our parser, spaces form nodes in the tree, and are
 taken to be right associative. So, the example above represents the
@@ -367,9 +367,9 @@ grammars, we're going to need the concept of a lexicon. In our case, a
 lexicon will be a function from string to lists of typed expressions
 (because a word can have multiple interpretations):
 
-{% highlight haskell %}
+``` haskell
 type Lexicon expr = String -> [Typed expr]
-{% endhighlight %}
+```
 
 Parsing consists of four stages:
 
@@ -382,7 +382,7 @@ Below, you see the function written out in full. Note that the
 `checkType` function once again makes use of the type-level equality
 function `%~`:
 
-{% highlight haskell %}
+``` haskell
 parseWith :: SemE expr => Lexicon expr -> String -> SSynT a -> [expr (Tr a)]
 parseWith lex str a1 = do
     wordTree <- maybeToList (parseTree str)
@@ -402,7 +402,7 @@ parseWith lex str a1 = do
       combine (Leaf e)     = pure e
       combine (Node t1 t2) =
         do e1 <- combine t1; e2 <- combine t2; maybeToList (maybeApply e1 e2)
-{% endhighlight %}
+```
 
 
 
@@ -417,7 +417,7 @@ strings to valid Haskell functions.
 First, let's set up a small language to represent our world, which in
 this case is mostly made up of Bob and Tim:
 
-{% highlight haskell %}
+``` haskell
 data Entity = Tim -- ^ Tim is a carpenter and an introvert, likes
                   --   holding hands and long walks on the beach.
             | Bob -- ^ Bob is an aspiring actor, and a social media
@@ -427,7 +427,7 @@ data Entity = Tim -- ^ Tim is a carpenter and an introvert, likes
 data Pred = Like Entity Entity -- ^ Is it 'like' or 'like like'?
           | Stupid Entity      -- ^ This is definitely not 'like like'.
           deriving (Show)
-{% endhighlight %}
+```
 
 Secondly, we could turn our expressions into plain Haskell
 expressions, but that would be dull. Language isn't side-effect
@@ -439,12 +439,12 @@ by Oleg Kiselyov, Amr Sabry, Cameron Swords, and Hiromi Ishii.
 Let's translate our semantic types into effectful Haskell types! And,
 most importantly, let's keep the set of effects `r` unspecified!
 
-{% highlight haskell %}
+``` haskell
 type family ToEff r t :: * where
   ToEff r E         = Eff r Entity
   ToEff r T         = Eff r Pred
   ToEff r (a :-> b) = ToEff r a -> ToEff r b
-{% endhighlight %}
+```
 
 Now, because Haskell is being a buzzkill about using un-saturated type
 families, we have to wrap our translation in a newtype to be able to
@@ -452,32 +452,32 @@ use it with the `Typed` definition and the `SemE` type class. And
 because of this, we also have to convince Haskell that these wrapped
 Haskell functions can be applied:
 
-{% highlight haskell %}
+``` haskell
 newtype Ext r a = Ext (ToEff r a)
 
 instance SemE (Ext r) where
   apply (Ext f) (Ext x) = Ext (f x)
-{% endhighlight %}
+```
 
 But now we're all ready to go! First, let's determine the effects we
 want to use in our library. We could still leave this underspecified,
 and only mention which effects we expect to be supported... but that
 would be much more verbose:
 
-{% highlight haskell %}
+``` haskell
 type RW = (Reader Entity ': Writer Pred ': '[])
-{% endhighlight %}
+```
 
 Hooray! We can have a lexicon now! And it's reasonably simple, too!
 
-{% highlight haskell %}
+``` haskell
 lex :: String -> [Typed (Ext RW)]
 lex "tim"    = [ Typed (SNP , Ext (pure Tim))                            ]
 lex "bob"    = [ Typed (SNP , Ext (pure Bob))                            ]
 lex "likes"  = [ Typed (sTV , Ext (liftA2 (flip Like)))                  ]
 lex "stupid" = [ Typed (sAP , Ext (>>= \x -> tell (Stupid x) *> pure x)) ]
 lex "him"    = [ Typed (SNP , Ext ask)                                   ]
-{% endhighlight %}
+```
 
 The first two definitions simply return Tim and Bob as effect-free
 constants---hence the application of `pure`. Tim and Bob are both of
@@ -508,17 +508,17 @@ We're still stuck with these unresolved effects coming from our
 lexicon. So we're going to define a function `runExt`, which handles
 all effects in order, and then escapes the `Eff` monad:
 
-{% highlight haskell %}
+``` haskell
 runExt :: Entity -> Ext RW T -> (Pred, [Pred])
 runExt x (Ext e) = run (runWriter (runReader e x))
-{% endhighlight %}
+```
 
 And with all this in place, we can handle an example sentence:
 
-{% highlight haskell %}
+``` haskell
 example :: [(Pred, [Pred])]
 example = runExt Tim <$> parseWith lex "(stupid bob) likes him" SS
-{% endhighlight %}
+```
 
 Which evaluates to: `[(Like Bob Tim,[Stupid Bob])]`
 

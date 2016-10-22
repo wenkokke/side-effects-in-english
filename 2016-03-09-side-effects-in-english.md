@@ -112,7 +112,7 @@ In addition, we're going to use the following packages:
 [parsec](https://hackage.haskell.org/package/parsec);
 [markdown-unlit](https://hackage.haskell.org/package/markdown-unlit).
 For the extensible effects library, I've included a copy of all the
-required code in [the repository](https://github.com/pepijnkokke/ab_grammar).
+required code in [the repository](https://github.com/pepijnkokke/side-effects-in-english/).
 
 Before we start off, let's review some basic AB-grammar knowledge. In
 general, a categorial grammar---of which AB-grammars are an

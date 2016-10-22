@@ -64,13 +64,16 @@ lex :: String -> [SomeEffectfulFunction]
 lex "tim"    = [ NP , Tim             ]
 lex "bob"    = [ NP , Bob             ]
 lex "likes"  = [ TV , Like            ]
-lex "stupid" = [ AP , < id , Stupid > ] -- Has an identity (i.e. no) meaning,but
-                                        -- but conveys `Stupid` as a side-effect.
-lex "him"    = [ NP , magic           ] -- Has some magic way of obtaining the
-                                        -- thing that's referenced.
+lex "stupid" = [ AP , < id , Stupid > ]
+-- ^ Has an identity (i.e. no) meaning, but
+--   but conveys `Stupid` as a side-effect.
+lex "him"    = [ NP , magic           ]
+-- ^ Has some magic way of obtaining the
+--   thing that's referenced.
 
 example :: [(Pred, [Pred])]
-example = parseWith Tim "(stupid bob) likes him" --> [(Like Bob Tim,[Stupid Bob])]
+example = parseWith Tim "(stupid bob) likes him"
+     -- > [(Like Bob Tim,[Stupid Bob])]
 ~~~
 {:.language-haskell}
 
@@ -83,11 +86,11 @@ extensions. This is because we're basically going to parse strings to
 Haskell functions:
 
 ``` haskell
-{-# LANGUAGE TemplateHaskell, QuasiQuotes, FlexibleInstances, FlexibleContexts,
-             TypeFamilies, GADTs, TypeOperators, DataKinds, PolyKinds, RankNTypes,
-             KindSignatures, UndecidableInstances, StandaloneDeriving,
-             RecordWildCards, DeriveFunctor, DeriveFoldable, DeriveTraversable
-             #-}
+{-# LANGUAGE
+    TemplateHaskell, QuasiQuotes, FlexibleInstances, FlexibleContexts,
+    TypeFamilies, GADTs, TypeOperators, DataKinds, PolyKinds, RankNTypes,
+    KindSignatures, UndecidableInstances, StandaloneDeriving,
+    RecordWildCards, DeriveFunctor, DeriveFoldable, DeriveTraversable #-}
 ```
 
 <div style="display:none;">

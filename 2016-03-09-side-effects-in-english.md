@@ -1,8 +1,7 @@
 ---
 title      : "Side-effects in English"
 date       : 2016-03-09 12:00:00
-categories : [compsci, compling]
-tags       : [haskell, catgram]
+tags       : [linguistics, formal language, haskell]
 ---
 
 Back when I wrote this, I had just discovered

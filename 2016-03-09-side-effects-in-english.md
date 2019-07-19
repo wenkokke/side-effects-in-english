@@ -1,7 +1,7 @@
 ---
 title      : "Side-effects in English"
 date       : 2016-03-09 12:00:00
-tags       : [linguistics, formal language, haskell]
+tags       : [linguistics, formal language theory, haskell]
 ---
 
 Back when I wrote this, I had just discovered
